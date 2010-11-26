@@ -1,0 +1,285 @@
+<?php
+
+include_once('atrium_message.features.inc');
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function atrium_message_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  global $user;
+
+  // Do nothing if content type is opted out of updates.
+  if (variable_get('atrium_update_type_' . $node->type, TRUE) == FALSE) {
+    return;
+  }
+
+  if ($op == 'insert') {
+    $message = message_load('node_create');
+    atrium_message_save_activity($message, 'node', $node, $user->uid);
+  }
+  elseif ($op == 'update') {
+    $old = node_load($node->nid);
+    if ($old->status == 1 && $node->status == 0) {
+      $message = message_load('node_unpublish');
+    }
+    elseif ($old->status == 0 && $node->status == 1) {
+      $message = message_load('node_publish');
+    }
+    else {
+      $message = message_load('node_update');
+    }
+    atrium_message_save_activity($message, 'node', $node, $user->uid);
+  }
+  elseif ($op == 'delete') {
+    $message = message_load('node_delete');
+    atrium_message_save_activity($message, 'node', $node, $user->uid);
+  }
+}
+
+/**
+ * Implementation of hook_comment().
+ */
+function atrium_message_comment(&$comment, $op) {
+  global $user;
+  if ($op == 'insert') {
+    $message = message_load('comment_create');
+    atrium_message_save_activity($message, 'comment', $comment, $user->uid);
+  }
+} 
+
+/**
+ * Implementation of hook_og().
+ */
+function atrium_message_og($op, $gid, $uid, $args) {
+  // In small-teams mode, make announcements about group users.
+  if (variable_get('atrium_notifications', 0) == 1 || 
+    !in_array($op, array('user insert', 'user delete', 'user deny', 'user request', 'admin new'))) {
+    return;
+  }
+  $node = node_load($gid);
+  $message = message_load('og_' . str_replace(' ', '_', $op));
+  if ($op == 'user request' || $op == 'admin new') {
+    $realms = array('user', 'og_admin');
+  }
+  atrium_message_save_activity($message, 'og', $node, $uid, $realms);
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function atrium_message_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'spaces_features_form') {
+    $form['#submit'][] = 'atrium_message_spaces_features_messages';
+  }
+}
+
+/**
+ * Submit callback for spaces_features_form.
+ * Used to trigger messages by group features updates.
+ */
+function atrium_message_spaces_features_messages(&$form, &$form_state) {
+  global $user;
+  $changes = array();
+  foreach ($form_state['values']['spaces_features'] as $feature => $new) {
+    if ($new != $form['spaces_features'][$feature]['#default_value']) {
+      if ($new == '1') {
+        $changes[] = array('message' => 'spaces_features_enabled', 'feature' => $feature);
+      }
+      else {
+        $changes[] = array('message' => 'spaces_features_disabled', 'feature' => $feature);
+      }
+    }
+  }
+
+  $messages = array();
+  $space = spaces_get_space();
+  foreach ($changes as $change) {
+    if (!array_key_exists($change['message'], $messages)) {
+      $messages[$change['message']] = message_load($change['message']);
+    }
+    // Hack to keep things simple for now.
+    $space->changed_feature = features_get_modules($change['feature']);
+    atrium_message_save_activity($messages[$change['message']], 'spaces', $space, $user->uid, array('og_admin', 'user'));
+  }
+}
+
+/**
+ * Helper function to generate and save activity messages.
+ */
+function atrium_message_save_activity($message, $type = 'node', $object, $uid, $realms = array()) {
+  $func = '_atrium_message_save_' . $type . '_activity';
+  $activity = $func($message, $object, $uid);
+
+  if (empty($realms)) {
+    $realms = array('user', 'og');
+  }
+  foreach ($realms as $realm) {
+    switch($realm) {
+      case 'user':
+        // Save to user realm.
+        $realm = new stdClass();
+        $realm->iid = $activity['message_instance']->iid;
+        $realm->realm = 'user';
+        $realm->realm_id = $uid;
+        message_realm_save($realm);
+        break;
+      case 'og':
+        if (!empty($activity['groups'])) {
+          foreach ($activity['groups'] as $gid) {
+            // Save to organic groups realm.
+            $realm = new stdClass();
+            $realm->iid = $activity['message_instance']->iid;
+            $realm->realm = 'og';
+            $realm->realm_id = $gid;
+            message_realm_save($realm);
+          }
+        }
+        break;
+      case 'og_admin':
+        if (!empty($activity['groups'])) {
+          foreach ($activity['groups'] as $gid) {
+            // Save to organic groups realm.
+            $realm = new stdClass();
+            $realm->iid = $activity['message_instance']->iid;
+            $realm->realm = 'og_admin';
+            $realm->realm_id = $gid;
+            message_realm_save($realm);
+          }
+        }
+        break;
+    }
+  }  
+}
+
+/**
+ * Helper function to save node activity message.
+ */
+  function _atrium_message_save_node_activity($message, $node, $uid) {
+  $arguments = array(
+    '@link' => array(
+      'callback' => 'url',
+      'callback arguments' => array('node/' . $node->nid),
+    ),
+    '@title' => $node->title,
+  );
+
+  // Create message instance.
+  $message_instance = new stdClass();
+  $message_instance->name = $message->name;
+  $message_instance->uid = $uid;
+  $message_instance->entity_type = 'node';
+  $message_instance->eid = $node->nid;
+  $message_instance->arguments = $arguments;
+
+  return array(
+    'message_instance' => message_instance_save($message_instance),
+    'groups' => $node->og_groups,
+  );
+}
+
+/**
+ * Helper function to save group activity message.
+ */
+function _atrium_message_save_og_activity($message, $node, $uid) {
+  $arguments = array(
+    '@link' => array(
+      'callback' => 'url',
+      'callback arguments' => array('node/' . $node->nid),
+    ),
+    '@title' => $node->title,
+  );
+
+  // Create message instance.
+  $message_instance = new stdClass();
+  $message_instance->name = $message->name;
+  $message_instance->uid = $uid;
+  $message_instance->entity_type = 'og';
+  $message_instance->eid = $node->nid;
+  $message_instance->arguments = $arguments;
+
+  return array(
+    'message_instance' => message_instance_save($message_instance),
+    'groups' => array($node->nid),
+  );
+}
+
+/**
+ * Helper function to save spaces activity message.
+ */
+function _atrium_message_save_spaces_activity($message, $space, $uid) {
+  $arguments = array(
+    '@link' => array(
+      'callback' => 'url',
+      'callback arguments' => array('node/' . $space->group->nid . '/features'),
+    ),
+    '@title' => $space->changed_feature->info['name'],
+  );
+
+  // Create message instance.
+  $message_instance = new stdClass();
+  $message_instance->name = $message->name;
+  $message_instance->uid = $uid;
+  $message_instance->entity_type = 'og';
+  $message_instance->eid = $space->group->nid;
+  $message_instance->arguments = $arguments;
+
+  return array(
+    'message_instance' => message_instance_save($message_instance),
+    'groups' => array($space->group->nid),
+  );
+}
+
+/**
+ * Helper function to save comment activity message.
+ */
+function _atrium_message_save_comment_activity($message, $comment, $uid) {
+  $node = node_load($comment['nid']);
+  $arguments = array(
+    '@link' => array(
+      'callback' => 'url',
+      'callback arguments' => array(
+        'node/' . $node->nid,
+        array('fragment' => 'comment-' . $comment['cid'])
+      ),
+    ),
+    '@title' => $node->title,
+  );
+
+  // Create message instance.
+  $message_instance = new stdClass();
+  $message_instance->name = $message->name;
+  $message_instance->uid = $uid;
+  $message_instance->entity_type = 'comment';
+  $message_instance->eid = $comment['cid'];
+  $message_instance->arguments = $arguments;
+
+  return array(
+    'message_instance' => message_instance_save($message_instance),
+    'groups' => $node->og_groups,
+  );
+}
+ 
+/**
+ * Get a group space context.
+ *
+ * @return
+ *   Group ID or FALSE if none found.
+ */
+function atrium_message_get_spaces() {
+  $return = FALSE;
+  if (($space = spaces_get_space()) && $space->type == 'og') {
+    $return = $space->group->nid;
+  }
+  return $return;
+}
+
+function atrium_message_context_default_contexts_alter(&$contexts) {
+  unset($contexts['spaces_dashboard-custom-1']->reactions['block']['blocks']['views-activity_listing-block_1']);
+  $contexts['spaces_dashboard-custom-1']->reactions['block']['blocks']['views-atrium_message-block_1'] = array(
+    'module' => 'views',
+    'delta' => 'activity_message-block_1',
+    'region' => 'content',
+    'weight' => 1,
+  );
+dpm($contexts['spaces_dashboard-custom-1']);
+}
