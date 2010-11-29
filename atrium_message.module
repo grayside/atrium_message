@@ -330,5 +330,4 @@ function atrium_message_message_instances_alter(&$message_instances) {
       $message_instances[$key]->arguments['!link']['callback arguments'][2]['attributes']['class'] .= " message-{$message->name}";
     }
   }
-  dpm($message_instances);
 }
