@@ -172,13 +172,12 @@ function atrium_message_save_activity($message, $type = 'node', $object, $uid, $
 /**
  * Helper function to save node activity message.
  */
-  function _atrium_message_save_node_activity($message, $node, $uid) {
+function _atrium_message_save_node_activity($message, $node, $uid) {
   $arguments = array(
     '@link' => array(
-      'callback' => 'url',
-      'callback arguments' => array('node/' . $node->nid),
+      'callback' => 'l',
+      'callback arguments' => array($node->title, 'node/' . $node->nid),
     ),
-    '@title' => $node->title,
   );
 
   // Create message instance.
@@ -201,10 +200,9 @@ function atrium_message_save_activity($message, $type = 'node', $object, $uid, $
 function _atrium_message_save_og_activity($message, $node, $uid) {
   $arguments = array(
     '@link' => array(
-      'callback' => 'url',
-      'callback arguments' => array('node/' . $node->nid),
+      'callback' => 'l',
+      'callback arguments' => array($node->title, 'node/' . $node->nid),
     ),
-    '@title' => $node->title,
   );
 
   // Create message instance.
@@ -227,10 +225,9 @@ function _atrium_message_save_og_activity($message, $node, $uid) {
 function _atrium_message_save_spaces_activity($message, $space, $uid) {
   $arguments = array(
     '@link' => array(
-      'callback' => 'url',
-      'callback arguments' => array('node/' . $space->group->nid . '/features'),
+      'callback' => 'l',
+      'callback arguments' => array($space->changed_feature->info['name'], 'node/' . $space->group->nid . '/features'),
     ),
-    '@title' => $space->changed_feature->info['name'],
   );
 
   // Create message instance.
@@ -254,13 +251,13 @@ function _atrium_message_save_comment_activity($message, $comment, $uid) {
   $node = node_load($comment['nid']);
   $arguments = array(
     '@link' => array(
-      'callback' => 'url',
+      'callback' => 'l',
       'callback arguments' => array(
+        $node->title,
         'node/' . $node->nid,
         array('fragment' => 'comment-' . $comment['cid'])
       ),
     ),
-    '@title' => $node->title,
   );
 
   // Create message instance.
@@ -310,3 +307,4 @@ function atrium_message_context_load_alter(&$context) {
     }
   }
 }
+
