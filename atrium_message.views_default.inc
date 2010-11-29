@@ -306,14 +306,15 @@ function atrium_message_views_default_views() {
     'separator' => '',
     'hide_empty' => 0,
   ));
-  $handler = $view->new_display('block', 'Block', 'block_1');
+  $handler = $view->new_display('block', 'OG Block', 'block_1');
   $handler->override_option('block_description', 'Messages: Recent activity');
   $handler->override_option('block_caching', -1);
-  $handler = $view->new_display('block', 'Block', 'block_2');
+  $handler = $view->new_display('block', 'OG Admin Block', 'block_2');
   $handler->override_option('filters', array(
     'message_plugin_realm' => array(
       'operator' => 'in',
       'value' => array(
+        'message_plugin_og' => 'message_plugin_og',
         'message_plugin_og_admin' => 'message_plugin_og_admin',
       ),
       'group' => '0',
@@ -331,17 +332,16 @@ function atrium_message_views_default_views() {
       ),
     ),
   ));
-  $handler->override_option('title', 'Recent activity [Group Admins]');
   $handler->override_option('block_description', 'Messages: Recent activity [Group Admins]');
   $handler->override_option('block_caching', -1);
   $translatables['atrium_message'] = array(
-    t('Block'),
     t('Defaults'),
     t('Messages: Recent activity'),
     t('Messages: Recent activity [Group Admins]'),
     t('No recent activity found.'),
+    t('OG Admin Block'),
+    t('OG Block'),
     t('Recent activity'),
-    t('Recent activity [Group Admins]'),
   );
 
   $views[$view->name] = $view;
