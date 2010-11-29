@@ -262,24 +262,33 @@ function _atrium_message_save_comment_activity($message, $comment, $uid) {
 /**
  * Get a group space context.
  *
+ * Used to set the default value of the atrium_message view.
+ *
  * @return
- *   Group ID or FALSE if none found.
+ *   Group ID or 'all' if none found.
  */
 function atrium_message_get_spaces() {
-  $return = FALSE;
+  $return = 'all';
   if (($space = spaces_get_space()) && $space->type == 'og') {
     $return = $space->group->nid;
   }
   return $return;
 }
 
-function atrium_message_context_default_contexts_alter(&$contexts) {
-  unset($contexts['spaces_dashboard-custom-1']->reactions['block']['blocks']['views-activity_listing-block_1']);
-  $contexts['spaces_dashboard-custom-1']->reactions['block']['blocks']['views-atrium_message-block_1'] = array(
-    'module' => 'views',
-    'delta' => 'activity_message-block_1',
-    'region' => 'content',
-    'weight' => 1,
-  );
-dpm($contexts['spaces_dashboard-custom-1']);
+/**
+ * Implementation of hook_context_load_alter().
+ */
+function atrium_message_context_load_alter(&$context) {
+  // Switch out recent activity block wherever it appears.
+  if (!empty($context->reactions['block']['blocks']['views-activity_listing-block_1'])) {
+    $space = spaces_get_space();
+    if (og_is_group_admin($space->group)) {
+      // Switch in block that includes group administrator updates.
+      $context->reactions['block']['blocks']['views-activity_listing-block_1']['delta'] = 'atrium_message-block_2';
+    }
+    else {
+      // Switch in Atrium Message's drop-in replacement for core Atrium Activity feature.
+      $context->reactions['block']['blocks']['views-activity_listing-block_1']['delta'] = 'atrium_message-block_1';
+    }
+  }
 }
