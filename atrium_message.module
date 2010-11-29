@@ -15,10 +15,22 @@ function atrium_message_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 
   if ($op == 'insert') {
     $message = message_load('node_create');
-    atrium_message_save_activity($message, 'node', $node, $user->uid);
+    // Fake that group nodes are a part of their groups.
+    $realms = array();    
+    if (og_is_group_type($node->type)) {
+      $node->og_groups = array($node->nid => $node->nid);
+      $realms = array('user', 'og_admin');
+    }
+    atrium_message_save_activity($message, 'node', $node, $user->uid, $realms);
   }
   elseif ($op == 'update') {
     $old = node_load($node->nid);
+    // Fake that group nodes are a part of their groups.
+    $realms = array();
+    if (og_is_group_type($node->type)) {
+      $node->og_groups = array($node->nid => $node->nid);
+      $realms = array('user', 'og_admin');
+    }
     if ($old->status == 1 && $node->status == 0) {
       $message = message_load('node_unpublish');
     }
@@ -28,11 +40,17 @@ function atrium_message_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     else {
       $message = message_load('node_update');
     }
-    atrium_message_save_activity($message, 'node', $node, $user->uid);
+    atrium_message_save_activity($message, 'node', $node, $user->uid, $realms);
   }
   elseif ($op == 'delete') {
+    // Fake that group nodes are a part of their groups.
+    $realms = array();
+    if (og_is_group_type($node->type)) {
+      $node->og_groups = array($node->nid => $node->nid);
+      $realms = array('user', 'og_admin');
+    }
     $message = message_load('node_delete');
-    atrium_message_save_activity($message, 'node', $node, $user->uid);
+    atrium_message_save_activity($message, 'node', $node, $user->uid, $realms);
   }
 }
 
