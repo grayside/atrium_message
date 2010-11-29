@@ -76,7 +76,7 @@ function atrium_message_og($op, $gid, $uid, $args) {
   }
   $node = node_load($gid);
   $message = message_load('og_' . str_replace(' ', '_', $op));
-  if ($op == 'user request' || $op == 'admin new') {
+  if ($op == 'user request' || $op == 'admin new' || $op == 'user deny') {
     $realms = array('user', 'og_admin');
   }
   atrium_message_save_activity($message, 'og', $node, $uid, $realms);
