@@ -21,7 +21,7 @@ function atrium_message_message_default_messages() {
   $message->name = 'comment_create';
   $message->description = '';
   $message->tag = '';
-  $message->message = 'commented on @link';
+  $message->message = 'commented on !link';
   $message->language = '';
 
   $export['comment_create'] = $message;
@@ -31,7 +31,7 @@ function atrium_message_message_default_messages() {
   $message->name = 'node_create';
   $message->description = '';
   $message->tag = '';
-  $message->message = 'posted @link';
+  $message->message = 'posted !link';
   $message->language = '';
 
   $export['node_create'] = $message;
@@ -41,7 +41,7 @@ function atrium_message_message_default_messages() {
   $message->name = 'node_delete';
   $message->description = '';
   $message->tag = '';
-  $message->message = 'deleted @link';
+  $message->message = 'deleted !link';
   $message->language = '';
 
   $export['node_delete'] = $message;
@@ -51,7 +51,7 @@ function atrium_message_message_default_messages() {
   $message->name = 'node_publish';
   $message->description = '';
   $message->tag = '';
-  $message->message = 'restored @link';
+  $message->message = 'restored !link';
   $message->language = '';
 
   $export['node_publish'] = $message;
@@ -61,7 +61,7 @@ function atrium_message_message_default_messages() {
   $message->name = 'node_unpublish';
   $message->description = '';
   $message->tag = '';
-  $message->message = 'archived @link';
+  $message->message = 'archived !link';
   $message->language = '';
 
   $export['node_unpublish'] = $message;
@@ -71,7 +71,7 @@ function atrium_message_message_default_messages() {
   $message->name = 'node_update';
   $message->description = '';
   $message->tag = '';
-  $message->message = 'updated @link';
+  $message->message = 'updated !link';
   $message->language = '';
 
   $export['node_update'] = $message;
@@ -81,7 +81,7 @@ function atrium_message_message_default_messages() {
   $message->name = 'og_admin_new';
   $message->description = '';
   $message->tag = '';
-  $message->message = 'is now an admin of @link';
+  $message->message = 'is now an admin of !link';
   $message->language = '';
 
   $export['og_admin_new'] = $message;
@@ -91,7 +91,7 @@ function atrium_message_message_default_messages() {
   $message->name = 'og_user_delete';
   $message->description = '';
   $message->tag = '';
-  $message->message = 'has left @link';
+  $message->message = 'has left !link';
   $message->language = '';
 
   $export['og_user_delete'] = $message;
@@ -101,7 +101,7 @@ function atrium_message_message_default_messages() {
   $message->name = 'og_user_deny';
   $message->description = '';
   $message->tag = '';
-  $message->message = 'has been denied membership in @link';
+  $message->message = 'has been denied membership in !link';
   $message->language = '';
 
   $export['og_user_deny'] = $message;
@@ -111,7 +111,7 @@ function atrium_message_message_default_messages() {
   $message->name = 'og_user_insert';
   $message->description = '';
   $message->tag = '';
-  $message->message = 'has joined @link';
+  $message->message = 'has joined !link';
   $message->language = '';
 
   $export['og_user_insert'] = $message;
@@ -121,7 +121,7 @@ function atrium_message_message_default_messages() {
   $message->name = 'og_user_request';
   $message->description = '';
   $message->tag = '';
-  $message->message = 'has requested to join @link';
+  $message->message = 'has requested to join !link';
   $message->language = '';
 
   $export['og_user_request'] = $message;
@@ -131,7 +131,7 @@ function atrium_message_message_default_messages() {
   $message->name = 'spaces_features_disabled';
   $message->description = '';
   $message->tag = '';
-  $message->message = 'disabled the @link feature';
+  $message->message = 'disabled the !link feature';
   $message->language = '';
 
   $export['spaces_features_disabled'] = $message;
@@ -141,7 +141,7 @@ function atrium_message_message_default_messages() {
   $message->name = 'spaces_features_enabled';
   $message->description = '';
   $message->tag = '';
-  $message->message = 'enabled the @link feature';
+  $message->message = 'enabled the !link feature';
   $message->language = '';
 
   $export['spaces_features_enabled'] = $message;
