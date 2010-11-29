@@ -1,0 +1,34 @@
+## Atrium Message
+
+Drop in replacement for Open Atrium's core Atrium Activity module.
+
+The *Atrium Activity* module powers the "Recent activity" blocks by querying the
+last 30 days of node and comment activity in the database. The *Atrium Message*
+module is a [Message](http://drupal.org/project/message)-based feature that logs
+activities as they happen.
+
+### Installation
+Download and install Message and this feature. The "Recent activity" blocks will
+be silently replaced.
+
+Be aware that this module has no awareness of activities which predate it's
+installation. That means once you turn it on, all previous activity will vanish.
+
+### Activities Tracked
+#####Users are able to see the following messages:
+Comment Created, Node Created, Node Updated, Node Deleted, Node Published,
+Node Unpublished, User Joined Group, User Left Group
+
+##### Group Administrators may also see the following:
+Group created, Group updated, User Requests Group Member, User Denied Group Membership,
+User Promoted to Group Admin, Feature Enabled, Feature Disabled
+
+### Todos
+There are a few major pieces of functionality still missing before you could
+consider Atrium Message a complete replacement for Atrium Message.
+
+1. Does not yet cover the user profile display listing all of a given user's
+activities.
+2. Does not insert icons/links for the Group or Feature from which the action
+originated.
+3. Miscellaneous refinements to avoid unwanted noise.
