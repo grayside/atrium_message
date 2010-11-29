@@ -319,6 +319,9 @@ function atrium_message_context_load_alter(&$context) {
       $context->reactions['block']['blocks']['views-activity_listing-block_1']['delta'] = 'atrium_message-block_1';
     }
   }
+  elseif (!empty($context->reactions['block']['blocks']['views-activity_listing-block_3'])) {
+    $context->reactions['block']['blocks']['views-activity_listing-block_3']['delta'] = 'atrium_message-block_3';
+  }
 }
 
 /**

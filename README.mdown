@@ -27,8 +27,6 @@ User Promoted to Group Admin, Feature Enabled, Feature Disabled
 There are a few major pieces of functionality still missing before you could
 consider Atrium Message a complete replacement for Atrium Message.
 
-1. Does not yet cover the user profile display listing all of a given user's
-activities.
-2. Does not insert icons/links for the Group or Feature from which the action
+1. Does not insert icons/links for the Group or Feature from which the action
 originated.
-3. Miscellaneous refinements to avoid unwanted noise.
+2. Miscellaneous refinements to avoid unwanted noise.
